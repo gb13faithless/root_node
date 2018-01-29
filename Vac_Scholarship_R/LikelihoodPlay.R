@@ -20,21 +20,14 @@ c(-0.75, 0.25, 0.25, 0.25, 0.25, -0.75,0.25,0.25,0.25,0.25,-0.75,0.25,0.25,0.25,
 nrow=4, 
 ncol=4)
 
+## JC equilibrium matrix
+
 R<- matrix( 
   c(0.25, 0.25, 0.25, 0.25, 0.25, 0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25), 
   nrow=4, 
   ncol=4)
 
-### JC equilibrium matrix
-
-Pi<- matrix( 
-  c(0.25, 0, 0, 0, 0, 0.25,0,0,0,0,0.25,0,0,0,0,0.25), 
-  nrow=4, 
-  ncol=4)
-
-
-# How to exponentiate the Rate Matrix (Taylor Series)
-
+### Exponentiate the Rate Matrix
 
 library(expm)
 # Q is the rate matrix, mu is the transition rate, t is the time taken
@@ -43,12 +36,16 @@ mu <- 1
 
 
 
-.f2 = function() {
 P <- expm(Q*(mu*t))
 P 
 # P is the matrix of transition probabilities
 
-# 2 sequence example
+
+####################################
+# 2 sequences
+####################################
+
+#1Pop directory needed
 
 # read in the fasta sequences
 S <- read.phyDat("test.fa",format="fasta", type="DNA")
@@ -57,59 +54,148 @@ T <-read.nexus("1PopDNA_1_true_trees.trees")
 #pull out an example tree
 T <- T$NumGen_tree_1_1_pos_0
 
+#examine the tree
 plot(T)
+#output a list of the edges
 T$edge
+
 
 #rename the sequences to match the tree nodes
 
 n<- length(S)
-names<- c(rep(1:2))
-for( i in 1:2) { 
+names<- c(rep(1:n))
+for( i in 1:n) { 
   names[i] <- paste( i, 1, sep = ".")
-} 
+}
 
 names(S) <- names
 
-
-
-# 2 sequence example
-
-
+# Setting initial parameters
 
 mu <- 1
 t<- 0.4 #T$edge.length[1]
-Q1<- expm(Q*(mu*t))
-#T$edge.length[1]
-Q2<- expm(Q*(mu*t))
-L <- matrix(, nrow = length(S$`1.1`), ncol = 1)
+Q1<- expm(Q*(mu*t)) #for branch length 1
+Q2<- expm(Q*(mu*t)) #for branch length 2 (same in this case)
+
+#Create L vector with number of rows equal to sites, to store likelihoods
+Ct1 <- matrix(nrow = length(S$`1.1`), ncol = 4)
+
+
 for(i in 1:length(S$`1.1`)){
-  #creates conditional likelihood (in this case 0 and 1)
+  for(j in 1:4){
   tmp <- matrix( 
     c(0,0,0,0), 
     nrow=4, 
     ncol=1)
   tmp[S$`1.1`[i],1]<-1
-  Ct1<- Q1%*%tmp
-#creates conditional likelihood (in this case 0 and 1)
+  Ct1[i,j] <- Q1[i,j]%*%tmp[j,1] # Stores the P_ij(t)L_j(1) values (Sequence)
+}
+}
+
+Ct1
+#sum the columns to create conditional likelihoods for the 4 nucleotides
+LL1 <- colSums (Ct1, na.rm = FALSE, dims = 1)
+#sums the conditional likelihoods
+LL1<- sum(LL1)
+
+
+################################################################
+#Repeat for Sequence 2
+################################################################
+
+
+#Create L vector with number of rows equal to sites, to store likelihoods
+Ct1 <- matrix(nrow = length(S$`1.1`), ncol = 4)
+
+
+for(i in 1:length(S$`1.1`)){
+  for(j in 1:4){
     tmp <- matrix( 
       c(0,0,0,0), 
       nrow=4, 
       ncol=1)
-  tmp[S$`2.1`[i],1]<-1
-    Ct2<- Q2%*%tmp
-L[i,1] <- t(Ct1)%*%Ct2
+    tmp[S$`1.1`[i],1]<-1
+    Ct1[i,j] <- Q1[i,j]%*%tmp[j,1] # Stores the P_ij(t)L_j(1) values (Sequence)
+  }
 }
-#likelihoods
-L
-# multiply by 0.25 (pi0)
-L <- L*0.25
-#log
-LL <- log(L)
-LL
-#log likelihood total (can just sum them up)
-total <- sum(LL)
-total
+
+Ct1
+#sum the columns to create conditional likelihoods for the 4 nucleotides
+LL1 <- colSums (Ct1, na.rm = FALSE, dims = 1)
+#sums the conditional likelihoods
+LL1<- sum(LL1)
+
+
+################################################################
+#Repeat for Sequence 2
+################################################################
+
+# Setting initial parameters
+
+mu <- 1
+t<- 0.4 #T$edge.length[1]
+Q1<- expm(Q*(mu*t)) #for branch length 1
+Q2<- expm(Q*(mu*t)) #for branch length 2 (same in this case)
+
+#Create L vector with number of rows equal to sites, to store likelihoods
+Ct1 <- matrix(nrow = length(S$`1.1`), ncol = 4)
+
+
+for(i in 1:length(S$`1.1`)){
+  for(j in 1:4){
+    tmp <- matrix( 
+      c(0,0,0,0), 
+      nrow=4, 
+      ncol=1)
+    tmp[S$`1.1`[i],1]<-1
+    Ct1[i,j] <- Q1[i,j]%*%tmp[j,1] # Stores the P_ij(t)L_j(1) values (Sequence)
+  }
 }
+
+Ct1
+#sum the columns to create conditional likelihoods for the 4 nucleotides
+LL1 <- colSums (Ct1, na.rm = FALSE, dims = 1)
+#Conditional likelihood at sequence 1 for the 4 nucleotides
+LL1
+
+
+
+################################################################
+#Repeat for Sequence 2
+################################################################
+
+
+#Create L vector with number of rows equal to sites, to store likelihoods
+Ct2 <- matrix(nrow = length(S$`1.1`), ncol = 4)
+
+
+for(i in 1:length(S$`1.1`)){
+  for(j in 1:4){
+    tmp <- matrix( 
+      c(0,0,0,0), 
+      nrow=4, 
+      ncol=1)
+    tmp[S$`2.1`[i],1]<-1
+    Ct2[i,j] <- Q2[i,j]%*%tmp[j,1] # Stores the P_ij(t)L_j(1) values (Sequence)
+  }
+}
+
+Ct2
+#sum the columns to create conditional likelihoods at sequence 2 for the 4 nucleotides
+LL2 <- colSums (Ct2, na.rm = FALSE, dims = 1)
+#Conditional likelihoods at sequence 2 for the 4 nucleotides
+LL2
+
+
+
+#Conditional Likelihoods at the node just the product of the 2 sequences (at each nucleotide)
+LT<- LL1*LL2
+#Total Likelihood is the sum multiplied by 0.25 (JC)
+LT <- sum(LT)*0.25
+#log likelihood
+LLT<- log(LT)
+LLT
+
 
 ###################################
 ######## 3 sequence example
