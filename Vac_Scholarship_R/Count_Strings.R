@@ -1,0 +1,6 @@
+install.packages("readr") 
+install.packages("stringr")
+library(readr)
+library(stringr)
+mystring <- read_file("rosalind_dna.txt")
+answer <- c(str_count(mystring, "A"),str_count(mystring, "C"),str_count(mystring, "G"),str_count(mystring, "T"))
