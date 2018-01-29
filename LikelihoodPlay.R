@@ -12,7 +12,6 @@ library("devtools")
 library("strataG")
 library("phylobase")
 
-
 ### JC Rate Matrix
 
 Q<- matrix( 
