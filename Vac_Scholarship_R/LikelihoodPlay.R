@@ -1,57 +1,51 @@
+## This code intends to Calculate The Log Likelihoods of Simple Phylogenetic Trees 
+
+# This Package is Required to Exponentiate the Rate Matrix 
 #install.packages('expm')
+library(expm)
+
+# These Packages are Required for Manipulating the Tree
 library(tree)
 library(ape)
 library(phangorn)
 library(seqinr)
-library("phangorn")
-library("ape")
 library("Biostrings")
 library("ggplot2")
 library("ggtree")
-library("devtools")
-library("strataG")
-library("phylobase")
 
-#comment
-### JC Rate Matrix
+
+# The Jukes Cantor Rate Matrix
 
 Q<- matrix( 
 c(-0.75, 0.25, 0.25, 0.25, 0.25, -0.75,0.25,0.25,0.25,0.25,-0.75,0.25,0.25,0.25,0.25,-0.75), 
 nrow=4, 
 ncol=4)
 
-## JC equilibrium matrix
 
-R<- matrix( 
-  c(0.25, 0.25, 0.25, 0.25, 0.25, 0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25,0.25), 
-  nrow=4, 
-  ncol=4)
-
-### Exponentiate the Rate Matrix
-
-library(expm)
+### Example of Exponentiate the Rate Matrix
 # Q is the rate matrix, mu is the transition rate, t is the time taken
 t <- 0.5
 mu <- 1
 
-
-
+# P becomes the probability transition matrix (ACGT) depending on mu and t
 P <- expm(Q*(mu*t))
 P 
-# P is the matrix of transition probabilities
+
 
 
 ####################################
 # 2 sequences
 ####################################
 
-#1Pop directory needed
+input.sequence.file <- "data.fa" 
+input.tree.file <- "data.trees"
 
 # read in the fasta sequences
+# Note, prior to doing this, need to convert fsc arlequin output to fasta format using PGPSpider
 S <- read.phyDat("test.fa",format="fasta", type="DNA")
-#read in the fsc tree
+#read in the fast sim coal generated tree
 T <-read.nexus("1PopDNA_1_true_trees.trees")
-#pull out an example tree
+#If there are multiple trees, pull out an example tree
 T <- T$NumGen_tree_1_1_pos_0
 
 #examine the tree
@@ -60,7 +54,8 @@ plot(T)
 T$edge
 
 
-#rename the sequences to match the tree nodes
+#rename the sequences to match the tree node labels
+# Note this is not really necessary
 
 n<- length(S)
 names<- c(rep(1:n))
@@ -70,25 +65,30 @@ for( i in 1:n) {
 
 names(S) <- names
 
+
 # Setting initial parameters
 
+#mu is mutation rate
+# t is the edge length (for a 2 sequence tree, will be the same)
+
 mu <- 1
-t<- 0.4 #T$edge.length[1]
+t<- 0.4 
 Q1<- expm(Q*(mu*t)) #for branch length 1
 Q2<- expm(Q*(mu*t)) #for branch length 2 (same in this case)
 
-#Create L vector with number of rows equal to sites, to store likelihoods
-Ct1 <- matrix(nrow = length(S$`1.1`), ncol = 4)
+#Create L vector with number of rows equal to number of polymorphic sites, to store likelihoods
+n <- length(S[[1]])
+Ct1 <- matrix(nrow = n, ncol = 4)
 
+# Loop to Calculate the Conditional Likelihoods for each nucletoide, for each site
+# i loops the different sites (filling down the rows)
+# j loops the different nucleotides 1:4, where 1 <- A, 2 <- C, 3 <- G, 4 <- T
 
-for(i in 1:length(S$`1.1`)){
+for(i in 1:n){
   for(j in 1:4){
-  tmp <- matrix( 
-    c(0,0,0,0), 
-    nrow=4, 
-    ncol=1)
-  tmp[S$`1.1`[i],1]<-1
-  Ct1[i,j] <- Q1[j,]%*%tmp # Stores the P_ij(t)L_j(1) values (Sequence)
+  tmp <- matrix( c(0,0,0,0), nrow=4, ncol=1)      # creates empty column matrix 
+  tmp[S[[1]][i],1]<-1                             # Inputs 1 into column where there is the nucleotide
+  Ct1[i,j] <- Q1[j,]%*%tmp                        # Stores the P_ij(t)L_j values (Sequence)
 }
 }
 
@@ -100,19 +100,17 @@ Ct1
 #Repeat for Sequence 2
 ################################################################
 
-
-#Create L vector with number of rows equal to sites, to store likelihoods
-Ct2 <- matrix(nrow = length(S$`1.1`), ncol = 4)
+Ct2 <- matrix(nrow = n, ncol = 4)
 
 
-for(i in 1:length(S$`1.1`)){
+for(i in 1:n){
   for(j in 1:4){
     tmp <- matrix( 
       c(0,0,0,0), 
       nrow=4, 
       ncol=1)
-    tmp[S$`2.1`[i],1]<-1
-    Ct2[i,j] <- Q2[j,]%*%tmp # Stores the P_ij(t)L_j(1) values (Sequence)
+    tmp[S[[2]][i],1]<-1
+    Ct2[i,j] <- Q2[j,]%*%tmp 
   }
 }
 
@@ -120,26 +118,26 @@ Ct2
 
 
 
-#Conditional Likelihoods at the node just the product of the 2 sequences (at each nucleotide)
+## Conditional Likelihoods at the node just the product of the 2 sequences (at each nucleotide)
 LT<- Ct1*Ct2
 LT
-#Add the rows and multiply by 0.25 to get the full likelihoods at each site
+
+## Add the rows and multiply by 0.25 to get the full likelihoods at each site
 LT <- rowSums (LT, na.rm = FALSE, dims = 1)
 LT <- LT * 0.25
 
 
-
-#Multiply the likelihoods to get the full likelihood
+#Multiply the likelihoods over all sites to get the full likelihood
 L <- prod(LT)
 L
 
-#log likelihood at Node 5
+#log likelihood 
 LL <- log(L)
 LL
 
 
 
-Likelihood<- function(par){
+
 
 
 ######################################################################
@@ -187,30 +185,46 @@ Tr <- Tr +geom_text2(aes(subset=!isTip, label=node), hjust=-.3)
 Tr <- Tr + geom_tiplab()
 Tr
 
+######################################################################
+######## 3 sequence Likelihood Function
+######################################################################
 
 
+# par[1] is t1 (between the minor clade)
+# par[2] is t2 (connecting the minor clade to the root)
+# mu is the mutation rate (usually set as 1)
+# S3 is the 3 sequence tree, of class phlyo
+# T3 is the 3 sequences phylogenetic tree (read in previously as a nexus file) where sequences 1 and 2 
+# are in a subclade, and all 3 sequences are named in the apporpriate format
 
 
+Likelihood<- function(par,mu,S3,T3){
 
-
-
-# Initialised Parameters
-
-mu <- 1
-#Branch Lenghts
+####################  
+# Initial Parameters
+####################
+  
+# Mutation Rate
+# mu <- 1
+# Branch Lenghts
 #t1<- 0.4 #T$edge.length[1]
 #t2<- 0.6
+  
 t3<- par[1]+par[2] #constrain the edge lengths
 
+
+# Exponentiated Rate Matrices for Likelihood Calculations
+#Minor Clade
 Q1<- expm(Q*(mu*par[1]))
-#Same Length clade
 Q2<- expm(Q*(mu*par[1]))
+#Connect Minor Clade to Root
 Q3<- expm(Q*(mu*par[2]))
+# Outgroup Branch
 Q4<- expm(Q*(mu*t3))
 
 
 ################################################################
-# first clade - to Calculate the likelihood at node 5
+# minor clade - to Calculate the likelihood at node 5 (ingorup node)
 ################################################################
 
 #Create L vector with number of rows equal to sites, to store likelihoods
@@ -218,7 +232,6 @@ Q4<- expm(Q*(mu*t3))
 n<- length(S3[[1]])
 
 Ct1 <- matrix(nrow = n, ncol = 4)
-
 
 for(i in 1:n){
   for(j in 1:4){
@@ -344,16 +357,24 @@ L
 #log likelihood at Node 4
 LL <- log(L)
 LL
-return(LL)
+
+para <- c(LL,par[1],par[2],t3)
+bar <- c("LogLikelihood", "t1", "t2","t3")
+newList <- list("integer" = para, "names" = bar)
+
+
+return(newList)
 }
 
 
-# works
-Likelihood(c(0.1,0.3))
 
 
-#Optimising PAckage
-install.packages("optimr")
+# Checking it works
+Likelihood(c(0.1,0.3),1,S3,T3)
+
+
+#Optimising Pαckage
+#install.packages("optimr")
 library(optimr)
 
 optimr(par = c(0.3, 0.4),fn=Likelihood)
@@ -479,6 +500,5 @@ P_mat<- exp(mu*t)*A%*%exp(D)%*%solve(A)
 A
 D
 A%*%exp(D)%*%solve(A)
-
 }
 
