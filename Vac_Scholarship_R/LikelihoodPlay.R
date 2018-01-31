@@ -197,15 +197,15 @@ Tr
 # T3 is the 3 sequences phylogenetic tree (read in previously as a nexus file) where sequences 1 and 2 
 # are in a subclade, and all 3 sequences are named in the apporpriate format
 
-
-Likelihood<- function(par,mu,S3,T3){
+#,mu,S3,T3 other parameters
+Likelihood<- function(par){
 
 ####################  
 # Initial Parameters
 ####################
   
 # Mutation Rate
-# mu <- 1
+mu <- 1
 # Branch Lenghts
 #t1<- 0.4 #T$edge.length[1]
 #t2<- 0.6
@@ -363,27 +363,26 @@ bar <- c("LogLikelihood", "t1", "t2","t3")
 newList <- list("integer" = para, "names" = bar)
 
 
-return(newList)
+return(-LL)
 }
 
 
 
 
 # Checking it works
-Likelihood(c(0.1,0.3),1,S3,T3)
+Likelihood(c(0.3,0.4))
 
 
 #Optimising Pαckage
 #install.packages("optimr")
 library(optimr)
 
+#is a minimising optimiser unless you add control$maximize=TRUE
 optimr(par = c(0.3, 0.4),fn=Likelihood)
 
 
-# Shoots off to infinity as t1 goes to 0
-Likelihood(c(0.00000000000000000000001,0.5))
 
-
+Likelihood(c(0.793,3.892))
 
 
 
