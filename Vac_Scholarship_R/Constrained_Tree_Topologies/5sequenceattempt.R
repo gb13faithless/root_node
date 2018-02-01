@@ -102,8 +102,7 @@ Ct[[1]][2,3]
 
 
 
-
-identical( Edge.Length[1], Edge.Length[2] )
+#identical( Edge.Length[1], Edge.Length[2] )
 
 Likelihood5<- function(t){
 
@@ -186,14 +185,15 @@ return(-LL)
 }
   
   
-Likelihood5(c(0,2,3,4,2,6,7,9))
-
+Likelihood5(c(0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01))
+Edge.Length
+Edges
 #Optimising Pαckage
 #install.packages("optimr")
 library(optimr)
 
 #is a minimising optimiser unless you add control$maximize=TRUE
-optim(par = c(0.3,.2,.3,.4,.2,.6,.7,.9), fn=Likelihood5, lower=0.00000001,method="L-BFGS-B")
+optim(par = c(0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01), fn=Likelihood5, lower=0.00000001,method="L-BFGS-B")
 
 # need to make the lower bound just above 0 or else optimising fails
 

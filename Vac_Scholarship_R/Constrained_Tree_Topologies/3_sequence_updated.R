@@ -1,3 +1,24 @@
+
+
+# This Package is Required to Exponentiate the Rate Matrix 
+#install.packages('expm')
+library(expm)
+
+# These Packages are Required for Manipulating the Tree
+library(tree)
+library(ape)
+library(phangorn)
+library(seqinr)
+library("Biostrings")
+library("ggplot2")
+library("ggtree")
+
+
+
+
+
+
+
 #####################################################################
 ######## 3 sequence example
 ######################################################################
@@ -66,24 +87,25 @@ Likelihood3<- function(t){
     c(-0.75, 0.25, 0.25, 0.25, 0.25, -0.75,0.25,0.25,0.25,0.25,-0.75,0.25,0.25,0.25,0.25,-0.75), 
     nrow=4, 
     ncol=4)
-  
+
   # Mutation Rate
   mu <- 1
   # Branch Lenghts
   #t1<- 0.4 #T$edge.length[1]
  #t2<- 0.6
   
-  t3<- t[1]+t[2] #constrain the edge lengths
+   #constrain the edge lengths
   
   
   # Exponentiated Rate Matrices for Likelihood Calculations
   #Minor Clade
+  library(expm)
   Q1<- expm(Q*(mu*t[1]))
   Q2<- expm(Q*(mu*t[1]))
   #Connect Minor Clade to Root
   Q3<- expm(Q*(mu*t[2]))
   # Outgroup Branch
-  Q4<- expm(Q*(mu*t3))
+  Q4<- expm(Q*(mu*t[3]))
   
   
   ################################################################
@@ -227,13 +249,14 @@ Likelihood3<- function(t){
   return(-LL)
 }
 
+Likelihood3(c(1,1,1))
 
 
 n <- 1000
 Data <- matrix( nrow = n, ncol = 2)
 Data[,1] <- c(1:1000)*0.01
 for(i in 1:n){
-  Data[i,2] <- Likelihood3(c(Data[i,1],0.001))
+  Data[i,2] <- Likelihood3(c(Data[i,1],0.001,0.001))
 }
 Data <- as.data.frame(Data)
 colnames(Data)<- c("t","Likelihood")
@@ -247,8 +270,8 @@ ggtitle("t against L")
 library(optimr)
 
 #is a minimising optimiser unless you add control$maximize=TRUE
-optim(par = c(4.76,1), fn=Likelihood3, lower=0.001,method="L-BFGS-B")
-
+optim(par = c(4.76,1,1), fn=Likelihood3, lower=0.00001,method="L-BFGS-B")
+optim(par = c(0.1), fn=Likelihood2, lower=0.00001,method="L-BFGS-B")
 
 
 
@@ -256,8 +279,15 @@ S <- S3[c(1,2)]
 S
 
 Likelihood2 <- function(t){
-  #mu <- 1
+  mu <- 1
   #t<- 0.4 
+  
+  Q<- matrix( 
+    c(-0.75, 0.25, 0.25, 0.25, 0.25, -0.75,0.25,0.25,0.25,0.25,-0.75,0.25,0.25,0.25,0.25,-0.75), 
+    nrow=4, 
+    ncol=4)
+
+  
   Q1<- expm(Q*(mu*t)) #for branch length 1
   Q2<- expm(Q*(mu*t)) #for branch length 2 (same in this case)
   
@@ -321,12 +351,15 @@ Likelihood2 <- function(t){
   #log likelihood 
   LL <- log(L)
   LL
-  return(LL)
+  return(-LL)
 }
 
 
+Likelihood3(c(1,1.9,0.1))
+Likelihood2(2)
+
 #is a minimising optimiser unless you add control$maximize=TRUE
-optim(par = 1, fn=Likelihood2, lower=0,method="L-BFGS-B")
+optim(par = 1, fn=Likelihood2, lower=0.01,method="L-BFGS-B")
 # Unfortunately Minimises to 0
 
 
@@ -352,8 +385,11 @@ ggplot(data = Data, aes(x = t, y = Likelihood)) + geom_point(shape=1)
 # geom_vline(xintercept = 0, colour = "gray65") +
 ggtitle("t against L")
 
-
-
+#install.packages("R.matlab")
+#library(R.matlab)
+#Matlab$startServer()
+#matlab <- Matlab()
+#isOpen <- open(matlab)
 
 
 
