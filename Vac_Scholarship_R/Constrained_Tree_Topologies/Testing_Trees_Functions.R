@@ -1,10 +1,9 @@
-# This file will attempt to put together 2 and 3 sequence Likelihoods to Try and do what Ben
-# Recommended on 31-1
+# This file holds the functions used to calculate the likelihood
 
 #####################################################################
 ######## Packages
 #####################################################################
-
+ 
 
 # This Package is Required to Exponentiate the Rate Matrix 
 #install.packages('expm')
@@ -19,54 +18,16 @@ library("Biostrings")
 library("ggplot2")
 library("ggtree")
 
-#####################################################################
-######## Read in the Data
-#####################################################################
-
-# Directory is in root_node/ Vac_Scholarship/ Constrainted.../Data 
-
-# read in the 3 fasta sequences
-S3 <- read.phyDat("XXY.fa",format="fasta", type="DNA")
-
-## Extract the first 2 for the 2 sequence tree 
-S2 <- S3[c(1,2)]
-
-#read in the 3 sequence tree
-T3 <-read.nexus("T3.trees")
-#pull out an example tree
-T3 <- T3$NumGen_tree_1_1_pos_0
-#read in the 2 sequence tree
-T2 <-read.nexus("T2.trees")
-#If there are multiple trees, pull out an example tree
-T2 <- T2$NumGen_tree_1_1_pos_0
-
-# example tree plots
-plot(T3) 
-plot(T2)
-
-#rename the sequences to match the tree node labels
-#S2
-n<- length(S2)
-names<- c(rep(1:n))
-for( i in 1:n) { 
-  names[i] <- paste( i, 1, sep = ".")
-}
-names(S2) <- names
-#S3
-n<- length(S3)
-names<- c(rep(1:n))
-for( i in 1:n) { 
-  names[i] <- paste( i, 1, sep = ".")
-}
-names(S3) <- names
 
 ########################################################################
 # 2 sequences
 ########################################################################
 
 # t edge length
+# S2 is the list of sequences (phyDat format)
+# Tt is the tree (phylo format)
 
-Likelihood2 <- function(t){
+Likelihood2 <- function(t,S2,T2){
   mu <- 1
   #t<- 1
   
@@ -78,6 +39,12 @@ Likelihood2 <- function(t){
   
   Q1<- expm(Q*(mu*t)) #Pij for branch length 1
   Q2<- expm(Q*(mu*t)) #Pij for branch length 2 (same in this case)
+  
+  
+  ################################################################
+  #Sequence 1
+  ################################################################
+  
   
   #Create vector with number of cols equal to number of polymorphic sites, to store likelihoods
   n <- length(S2[[1]])
@@ -95,7 +62,6 @@ Likelihood2 <- function(t){
   }
   
  #conditional likelihoods of seq 1 no. rows correspond to ACGT, no. columns correspond to length of sequence 
-  Ct1
   
 ################################################################
 #Repeat for Sequence 2
@@ -111,9 +77,6 @@ Likelihood2 <- function(t){
     Ct2[,i] <- tmp                        
   }
   
-  
-  Ct2
-  
 ## Matrix Multiply Through the Pij to get conditional likelihoods of ACGT (rows) at each site (cols) with PIJ
   
   Ct1 <- Q1%*%Ct1
@@ -123,7 +86,6 @@ Likelihood2 <- function(t){
 ## Conditional Likelihoods for each ACGT at the node just the product of the 2 sequences (sites down the cols)
 # Elementwise multiply
   CL <- Ct1 *Ct2 
-  CL
   
 ## Add the columns and multiply by 0.25 to get the full likelihoods at each site
   L <- colSums (CL, na.rm = FALSE, dims = 1)
@@ -131,11 +93,9 @@ Likelihood2 <- function(t){
   
 #Multiply the likelihoods over all sites to get the full likelihood
   L <- prod(L)
-  L
   
   #log likelihood 
   LL <- log(L)
-  LL
   return(-LL)
 }
 
@@ -143,15 +103,15 @@ Likelihood2 <- function(t){
 ######## 3 sequence Likelihood Function
 ######################################################################
 
-# t1 is a scalar and what we want to maximise
-# t2 is a vector of 2 elements (t' and t'')
+# t is a vector with 3 elements
+# t[1] is what we want to maximise
+# t[2],t[3] are t' and t''
 # t2's sum matters for likelihood, not the individual elements
+# S3 is the list of sequences (phyDat format)
+# Sequence 1 and 2 are the ingorup, 3 is the outgroup
+# T3 is the tree (phylo format)
 
-Likelihood3<- function(t){
-  
-  ####################  
-  # Initial Parameters
-  ####################
+Likelihood3<- function(t,S3,T3){
   
   Q<- matrix( 
     c(-0.75, 0.25, 0.25, 0.25, 0.25, -0.75,0.25,0.25,0.25,0.25,-0.75,0.25,0.25,0.25,0.25,-0.75), 
@@ -160,10 +120,6 @@ Likelihood3<- function(t){
 
   # Mutation Rate
   mu <- 1
-  # Branch Lenghts
-  #t <- c(0,0,0)
-  #t1<- 0.4 #T$edge.length[1]
-  #t2<- 0.6
 
   # Exponentiated Rate Matrices for Likelihood Calculations
   # Minor Clade
@@ -175,9 +131,13 @@ Likelihood3<- function(t){
   # Outgroup Branch
   Q4<- expm(Q*(mu*t[3]))
   
-  
   ################################################################
   # minor clade - to Calculate the likelihood at node 5 (ingorup node)
+  ################################################################
+  
+  
+  ################################################################
+  # Sequence 1 
   ################################################################
   
   #Create vector with number of rows equal to ACGT, cols for number of sites, to store likelihoods
@@ -194,7 +154,6 @@ Likelihood3<- function(t){
   }
   
   #conditional likelihoods of seq 1 no. rows correspond to ACGT, no. columns correspond to length of sequence 
-  Ct1
   
   
   ################################################################
@@ -212,9 +171,8 @@ Likelihood3<- function(t){
   # conditional likelihoods at sequence 2 for the 4 nucleotides
   Ct2
   
-  
   ################################################################
-  #Putting It Together
+  #Putting Sequence 1 and 2 Together
   ################################################################
   
   ## Matrix Multiply Through the Pij to get conditional likelihoods of ACGT (rows) at each site (cols) with PIJ
@@ -226,14 +184,14 @@ Likelihood3<- function(t){
   ## Conditional Likelihoods for each ACGT at the node just the product of the 2 sequences (sites down the cols)
   # Elementwise multiply to get conditional likelihood at node  
   Ct4 <- Ct1*Ct2 
+  
   ############################################################   
-  # These are the Likelihoods at the nodes for Later Calcs
+  # These are the Conditional Likelihoods at the node (for Later Calcs)
   ############################################################   
-  Ct4
 
 
   ################################################################
-  # the big clade ( i.e. the likelihood at root)
+  # Calculating the big clade ( i.e. the likelihood at root)
   ################################################################
   
   ############################
@@ -251,13 +209,11 @@ Likelihood3<- function(t){
     Ct3[,i] <- tmp                        
   }
   
-  # conditional likelihoods at sequence 3 for the 4 nucleotides
-  Ct3
+  # conditional likelihoods at sequence 3 for the 4 nucleotides is Ct3
   
   ################################################################
   #Putting It Together
   ################################################################
-  
   
   ## Matrix Multiply Through the Pij to get conditional likelihoods of ACGT (rows) at each site (cols) with PIJ
   
@@ -267,7 +223,6 @@ Likelihood3<- function(t){
   #product the two matrices to create conditional likelihoods 4 nucleotides over all sites
   
   CL<- Ct3*Ct4
-  CL
   
   ## Add the columns and multiply by 0.25 to get the full likelihoods at each site
   L <- colSums (CL, na.rm = FALSE, dims = 1)
@@ -275,48 +230,90 @@ Likelihood3<- function(t){
   
   #Multiply the likelihoods over all sites to get the full likelihood
   L <- prod(L)
-  L
   
   #log likelihood 
   LL <- log(L)
-  LL
 
   return(-LL)
 }
 
 
-#install.packages("optimr")
+#install.packages("optimr") to do the maximising
 library(optimr)
 
-#is a minimising optimiser unless you add control$maximize=TRUE
-optim(par =c(1,0.2,1.2),  fn=Likelihood3, lower=0.0000000000000001,method="L-BFGS-B")
-
-optim(par = 1, fn=Likelihood2, lower=0.0000000000000001,method="L-BFGS-B")
-
-Likelihood3(c(1,0.2,1.2))
 
 
+################################################################
+# Function to calculate the ML estimate for 2 sequence trees
+################################################################
 
+# t is a scalar (t1)
+# S2 is the list of sequences (phyDat format)
+# T2 is the tree (phylo format)
+# l is the lower bound for branch lenghts (above 0)
 
-
-n <- 1000
-Data <- matrix( nrow = n, ncol = 2)
-Data[,1] <- c(1:1000)*0.01
-for(i in 1:n){
-  Data[i,2] <- Likelihood3(c(Data[i,1],0.001,0.001))
+ML2<- function(t,S2,T2,l){
+  #is a minimising optimiser unless you add control$maximize=TRUE
+  optim<- optim(par = t, S2=S2, T2=T2,  fn=Likelihood2, lower=l, method="L-BFGS-B")
+  names <- c("t1")
+  branch.length <- c(optim$par[1])
+  df <- data.frame(names,branch.length)
+  return(df)
 }
-Data <- as.data.frame(Data)
-colnames(Data)<- c("t","Likelihood")
-
-ggplot(data = Data, aes(x = t, y = Likelihood)) + geom_point(shape=1)
-# geom_hline(yintercept = 0, colour = "gray65") +
-# geom_vline(xintercept = 0, colour = "gray65") +
-ggtitle("t against L")
 
 
+################################################################
+# Function to calculate the ML estimate for 3 sequence trees
+################################################################
+
+# t is a vector with 3 elements
+# t[1] is what we want to maximise
+# t[2],t[3] are t' and t''
+# t2's sum matters for likelihood, not the individual elements
+# S3 is the list of sequences (phyDat format)
+# T3 is the tree (phylo format)
+# l is the lower bound for branch lenghts (above 0)
 
 
 
-S <- S3[c(1,2)]
-S
+ML3<- function(t,S3,T3,l){
+#is a minimising optimiser unless you add control$maximize=TRUE
+optim<- optim(par = t, S3=S3, T3=T3,  fn=Likelihood3, lower=l, method="L-BFGS-B")
+names <- c("t1","t2")
+branch.length <- c(optim$par[1],optim$par[2]+optim$par[3])
+df <- data.frame(names,branch.length)
+  return(df)
+}
+
+
+#junk code
+function(n){
+  #rename the sequences to match the tree node labels
+  
+  #S2
+  n<- length(S2)
+  names<- c(rep(1:n))
+  for( i in 1:n) { 
+    names[i] <- paste( i, 1, sep = ".")
+  }
+  names(S2) <- names
+  
+  #S3
+  n<- length(S3)
+  names<- c(rep(1:n))
+  for( i in 1:n) { 
+    names[i] <- paste( i, 1, sep = ".")
+  }
+  names(S3) <- names
+  
+  
+}
+
+
+
+
+
+
+
+
 
