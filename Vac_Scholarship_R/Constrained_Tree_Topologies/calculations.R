@@ -71,6 +71,12 @@ ML2(t,XY,T3,0.001)
 Complex3 <- read.phyDat("Complex.fa",format="fasta", type="DNA")
 
 
+
+
+
+
+
+
 #Change names
 n<- length(Complex3)
 names<- c(rep(1:n))
