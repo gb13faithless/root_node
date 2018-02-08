@@ -1,0 +1,27 @@
+WARN  08-02 15:22:29,516 (PGDSpiderConfig.java:loadConfig:75)  -PGDSpider configuration file not found! Loading default configuration.
+DEBUG 08-02 15:22:29,605 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:29,631 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 15:22:30,454 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/3seq/spider.conf.xml
+DEBUG 08-02 15:22:30,517 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:30,547 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 15:22:31,368 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/3seq/spider.conf.xml
+DEBUG 08-02 15:22:31,445 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:31,465 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 15:22:32,335 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/3seq/spider.conf.xml
+DEBUG 08-02 15:22:32,400 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:32,429 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 15:22:33,242 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/3seq/spider.conf.xml
+DEBUG 08-02 15:22:33,308 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:33,332 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 15:22:34,143 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/3seq/spider.conf.xml
+DEBUG 08-02 15:22:34,209 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:34,234 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 15:22:35,114 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/3seq/spider.conf.xml
+DEBUG 08-02 15:22:35,196 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:35,215 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 15:22:36,193 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/3seq/spider.conf.xml
+DEBUG 08-02 15:22:36,294 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:36,329 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 15:22:37,347 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/3seq/spider.conf.xml
+DEBUG 08-02 15:22:37,436 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+DEBUG 08-02 15:22:37,460 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance

@@ -1,0 +1,6 @@
+WARN  08-02 14:58:07,373 (PGDSpiderConfig.java:loadConfig:75)  -PGDSpider configuration file not found! Loading default configuration.
+DEBUG 08-02 14:58:07,452 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 14:58:28,531 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/spider.conf.xml
+DEBUG 08-02 14:58:28,602 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance
+INFO  08-02 14:58:58,156 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /Users/georgebouras/Documents/root_node/spider.conf.xml
+DEBUG 08-02 14:58:58,218 (ParserFactory.java:getParserInstance:53)  -New ArlequinParser instance

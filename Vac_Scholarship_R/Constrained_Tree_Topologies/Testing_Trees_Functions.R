@@ -14,9 +14,9 @@ library(tree)
 library(ape)
 library(phangorn)
 library(seqinr)
-library("Biostrings")
-library("ggplot2")
-library("ggtree")
+library(Biostrings)
+library(ggplot2)
+library(ggtree)
 
 
 ########################################################################
@@ -284,6 +284,16 @@ branch.length <- c(optim$par[1],optim$par[2]+optim$par[3])
 df <- data.frame(names,branch.length)
   return(df)
 }
+
+ML3(t3,Sequence[[1]],T1,0.00000001)
+
+
+
+
+#function to get the minimum non negative number
+minpositive = function(x) min(x[x > 0])
+
+
 
 
 #junk code

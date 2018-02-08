@@ -1,46 +1,38 @@
-S1 <- read.phyDat("1.fa",format="fasta", type="DNA")
-S2 <- read.phyDat("2.fa",format="fasta", type="DNA")
-S3 <- read.phyDat("3.fa",format="fasta", type="DNA")
-S4 <- read.phyDat("4.fa",format="fasta", type="DNA")
-S5 <- read.phyDat("5.fa",format="fasta", type="DNA")
-S6 <- read.phyDat("6.fa",format="fasta", type="DNA")
-S7 <- read.phyDat("7.fa",format="fasta", type="DNA")
-S8 <- read.phyDat("8.fa",format="fasta", type="DNA")
-S9 <- read.phyDat("9.fa",format="fasta", type="DNA")
-S10 <- read.phyDat("10.fa",format="fasta", type="DNA")
-S11 <- read.phyDat("11.fa",format="fasta", type="DNA")
-S12 <- read.phyDat("12.fa",format="fasta", type="DNA")
-S13 <- read.phyDat("13.fa",format="fasta", type="DNA")
-S14 <- read.phyDat("14.fa",format="fasta", type="DNA")
-S15 <- read.phyDat("15.fa",format="fasta", type="DNA")
-S16 <- read.phyDat("16.fa",format="fasta", type="DNA")
-S17 <- read.phyDat("17.fa",format="fasta", type="DNA")
-S18 <- read.phyDat("18.fa",format="fasta", type="DNA")
-S19 <- read.phyDat("19.fa",format="fasta", type="DNA")
-S20 <- read.phyDat("20.fa",format="fasta", type="DNA")
+
+# These Packages are Required for Manipulating the Tree
+library(tree)
+library(ape)
+library(phangorn)
+library(seqinr)
+library(Biostrings)
+library(ggplot2)
+library(ggtree)
+
+#install.packages("optimr") to do the maximising
+library(optimr)
+
+
+# reads in all the fasta files
+
+ldf <- list() # creates a list
+listfa <- dir(pattern = "*.fa") # creates the list of all the fa files in the directory
+for (k in 1:length(listfa)){
+  ldf[[k]] <- read.phyDat(listfa[k],format="fasta", type="DNA")
+}
 
 
 
 
-T3 <-read.nexus("T.trees")
-T1 <- T3[1]
-
-n <- 20 
-
-#Create names
+n <- 1000
 
 Names<- c(rep(1:n))
 for( i in 1:n) { 
-  Names[i] <- paste( "S", i, sep = "")
+  Names[i] <- paste( "sim", i, sep = "")
 }
 Names
 
 
-
-#List of the Sequences
-
-Sequence <- list(S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14,S15,S16,S17,S18,S19,S20 )
-
+#Create names
 
 
 # Create Vectors for t1
@@ -69,11 +61,11 @@ minpositive = function(x) min(x[x > 0])
 
 for(i in 1:n){
 # polymorphic sites
-np<- length(Sequence[[i]][[1]]) 
+np<- length(ldf[[i]][[1]]) 
 # overall sites
-no <- 1000 
+no <- 10000 
 
-Sd <- as.DNAbin(Sequence[[i]])
+Sd <- as.DNAbin(ldf[[i]])
 
 DMraw<- dist.dna(Sd,model="raw", as.matrix = TRUE)
 DMraw <- DMraw * (np/no)
@@ -94,9 +86,9 @@ t <- 1
 
 
 for(i in 1:n){
-Temp <- ML3(t3,Sequence[[i]],T1,0.00000001)
+Temp <- ML3(t3,ldf[[i]],T1,0.00000001)
 df$t1.given.f3[i] <- Temp$branch.length[1]
-Temp <- ML2(t,Sequence[[i]],T1,0.00000001)
+Temp <- ML2(t,ldf[[i]],T1,0.00000001)
 df$t1.given.f2[i] <- Temp$branch.length[1]
 
 }
@@ -107,16 +99,23 @@ df <- as.data.frame(df)
 
 #### Plots
 
-require(ggplot2)
+library(ggplot2)
 
 plot <- ggplot(df, aes(delta.dist, delta.t1))+geom_point(size=0.5)
+
 plot2 <- ggplot(df, aes(t1.given.f2, t1.given.f3))+geom_point(size=0.5) + 
   scale_x_continuous(limits = c(0, 2)) + scale_y_continuous(limits = c(0, 1))
+plot2 <- plot2 + geom_abline(a=1,b=0)
+plot2 <- plot2 + stat_smooth(method="lm", se=TRUE,
+                             formula= myformula,colour="red")
 plot2
-plot
+  
+# poly function to fit polynomial
   
   
-  
+model <- lm(df$t1.given.f3 ~ poly(df$t1.given.f2,2))
+myformula <- y ~ poly(x, 2)
+summary(model)
   
 #plot <- plot + annotate(geom="text",x=0.12, y=0.195, label="Optimal Risky Portfolio (0.17988,0.16304)", color='black')
 #plot <- plot + scale_x_continuous(limits = c(0, 0.3))+ scale_y_continuous(limits = c(0, 0.3)) +  

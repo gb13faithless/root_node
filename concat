@@ -1,0 +1,3 @@
+cat *.arp > d:\combined.arp
+
+awk '$1~">"{print $0}$1!~">"{tmp="";for(i=1;i<200-length($0)+1;i++){tmp=tmp"T"};print $0""tmp}' combined.fa > output.fa
