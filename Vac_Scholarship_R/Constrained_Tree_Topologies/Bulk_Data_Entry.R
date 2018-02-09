@@ -14,16 +14,22 @@ library(optimr)
 
 # reads in all the fasta files
 
-ldf <- list() # creates a list
+
+T <-read.nexus("3seq2_1_true_trees.trees")
+plot(T$NumGen_tree_1_1_pos_0)
+plot(T$NumGen_tree_100_1_pos_0)
+
+  
+ldf3 <- list() # creates a list
 listfa <- dir(pattern = "*.fa") # creates the list of all the fa files in the directory
 for (k in 1:length(listfa)){
-  ldf[[k]] <- read.phyDat(listfa[k],format="fasta", type="DNA")
+  ldf3[[k]] <- read.phyDat(listfa[k],format="fasta", type="DNA")
 }
 
 
 
 
-n <- 1000
+n <- length(listfa)
 
 Names<- c(rep(1:n))
 for( i in 1:n) { 
@@ -61,11 +67,11 @@ minpositive = function(x) min(x[x > 0])
 
 for(i in 1:n){
 # polymorphic sites
-np<- length(ldf[[i]][[1]]) 
+np<- length(ldf3[[i]][[1]]) 
 # overall sites
-no <- 10000 
+no <- 10000
 
-Sd <- as.DNAbin(ldf[[i]])
+Sd <- as.DNAbin(ldf3[[i]])
 
 DMraw<- dist.dna(Sd,model="raw", as.matrix = TRUE)
 DMraw <- DMraw * (np/no)
@@ -86,9 +92,9 @@ t <- 1
 
 
 for(i in 1:n){
-Temp <- ML3(t3,ldf[[i]],T1,0.00000001)
+Temp <- ML3(t3,ldf3[[i]],T1,0.00001)
 df$t1.given.f3[i] <- Temp$branch.length[1]
-Temp <- ML2(t,ldf[[i]],T1,0.00000001)
+Temp <- ML2(t,ldf3[[i]],T1,0.00001)
 df$t1.given.f2[i] <- Temp$branch.length[1]
 
 }
@@ -97,11 +103,14 @@ df$delta.t1 <- df$t1.given.f2-df$t1.given.f3
 df <- as.data.frame(df)
 
 
+log(0.25)
+
 #### Plots
 
 library(ggplot2)
 
 plot <- ggplot(df, aes(delta.dist, delta.t1))+geom_point(size=0.5)
+plot
 
 plot2 <- ggplot(df, aes(t1.given.f2, t1.given.f3))+geom_point(size=0.5) + 
   scale_x_continuous(limits = c(0, 2)) + scale_y_continuous(limits = c(0, 1))
@@ -116,6 +125,7 @@ plot2
 model <- lm(df$t1.given.f3 ~ poly(df$t1.given.f2,2))
 myformula <- y ~ poly(x, 2)
 summary(model)
+
   
 #plot <- plot + annotate(geom="text",x=0.12, y=0.195, label="Optimal Risky Portfolio (0.17988,0.16304)", color='black')
 #plot <- plot + scale_x_continuous(limits = c(0, 0.3))+ scale_y_continuous(limits = c(0, 0.3)) +  
@@ -126,7 +136,7 @@ summary(model)
 
 
 
-
+head(df)
 
 
 

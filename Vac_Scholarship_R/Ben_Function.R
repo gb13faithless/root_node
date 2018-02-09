@@ -1,30 +1,17 @@
 
 
+species.fas <- read.dna(file='test.fa',format='fas')
+species.tree <- makeTree(species.fas)
+plot(species.tree)
 
-species.fas <- read.dna(file='data1.fa',format='fas')
-species.fas<- as.phyDat(species.fas)
 # Change the tipnames to numbers
-names(species.fas) <- 1:length(names(species.fas))
 
 # From the sequences, calculate genetic distances based
 # on the F81 model. F81 is the MOST complex model possible 
 # in the function.
-dm = dist.ml(species.fas,exclude="excluded",model = 'JC69')
-species.tree <- makeTree(species.fas, excluded='none',method='NJ')
-dm
-
-tree = NJ(dm)
-tree = upgma(dm)
 
 
-treeRA <- random.addition(species.fas,method='fitch')
-treeNNI <- optim.parsimony(tree, species.fas)
-treeRatchet <- pratchet(species.fas, start=tree)
-treeRatchet$tip.label <- obj.names
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-makeTree <- function(obj.phy,excluded='none',method='UPGMA'){
+makeTree <- function(obj.phy,excluded='none',method='NJ'){
   # A function for making a ML-tree from a phydat object
   # Created by: AB Rohrlach
   # Requires a sequence object, how to deal with missing data, and a method choice.
@@ -44,7 +31,7 @@ makeTree <- function(obj.phy,excluded='none',method='UPGMA'){
   # From the sequences, calculate genetic distances based
   # on the F81 model. F81 is the MOST complex model possible 
   # in the function.
-  dm = dist.ml(obj.phy,exclude="excluded",model = 'F81')
+  dm = dist.ml(obj.phy,exclude=excluded,model = 'F81')
   
   # Can either use Neighbour joining (NJ) or the
   # Unweighted Pair Group Method with Arithmetic Mean (upgma)
@@ -69,7 +56,3 @@ makeTree <- function(obj.phy,excluded='none',method='UPGMA'){
   names(obj.phy) <- obj.names
   return(acctran(treeRatchet, obj.phy))
 }
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
